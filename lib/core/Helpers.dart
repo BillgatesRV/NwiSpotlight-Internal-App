@@ -24,6 +24,57 @@ extension StringExtension on String {
 class Helpers {
   static bool isOthersProfile = false;
 
+  static void showErrorSnackBar(BuildContext context, String message) {
+    final snackBar = SnackBar(
+      behavior: SnackBarBehavior.fixed,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      duration: Duration(seconds: 2),
+      content: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.red.shade600,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.error_outline, color: Colors.white),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(snackBar);
+  }
+
+  static hideKeyBoard() {
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  static hideLoading(BuildContext context) {
+    Navigator.pop(context);
+  }
+  
   static void showLoading(BuildContext context) {
     showDialog(
       context: context,

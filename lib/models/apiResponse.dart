@@ -1,22 +1,19 @@
-class ApiResponse<T> {
-  T? result;
+class ApiResponse {
+  dynamic result;
   bool isSuccess;
-  String message;
+  String? message;
   int responseCode;
 
   ApiResponse({
-    this.result,
+    required this.result,
     required this.isSuccess,
-    required this.message,
-    required this.responseCode
+    this.message,
+    required this.responseCode,
   });
 
-  factory ApiResponse.fromJson(
-    Map<String, dynamic> json,
-    T Function(dynamic json) fromJsonT,
-  ) {
-    return ApiResponse<T>(
-      result: json['result'] != null ? fromJsonT(json['result']) : null,
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      result: json['result'],
       isSuccess: json['isSuccess'],
       message: json['message'] ?? '',
       responseCode: json['responseCode'],

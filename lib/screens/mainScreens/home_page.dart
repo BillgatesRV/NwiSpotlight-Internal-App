@@ -3,7 +3,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -12,7 +11,11 @@ import 'package:spotlight/components/user_card.dart';
 import 'package:spotlight/core/Helpers.dart';
 import 'package:spotlight/custom_controls/video_playerFeed.dart';
 import 'package:spotlight/models/allMediaResponse.dart';
+import 'package:spotlight/models/mediaLikedByResponse.dart';
+import 'package:spotlight/provider/allUserProfileProvider.dart';
 import 'package:spotlight/provider/homeProvider.dart';
+import 'package:spotlight/screens/subScreens/allUserProfileScreen.dart';
+import 'package:spotlight/services/authService/authStorage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -69,172 +72,167 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.white,
-        statusBarIconBrightness: Brightness.dark,
-      ),
-      child: SafeArea(
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SvgPicture.asset(
-                      "assets/images/media_icon.svg",
-                      height: 22,
-                      width: 22,
+    return Padding(
+      padding: const EdgeInsets.only(top: 25),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Column( 
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SvgPicture.asset(
+                    "assets/images/media_icon.svg",
+                    height: 22,
+                    width: 22,
+                  ),
+                  Text(
+                    'Spotlight',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontFamily: "Lexend",
+                      fontWeight: FontWeight.w400,
                     ),
-                    Text(
-                      'Spotlight',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontFamily: "Lexend",
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    SvgPicture.asset(
-                      "assets/images/notification_icon.svg",
-                      height: 22,
-                      width: 22,
-                    ),
-                  ],
-                ),
+                  ),
+                  SvgPicture.asset(
+                    "assets/images/notification_icon_b.svg",
+                    height: 22,
+                    width: 22,
+                  ),
+                ],
               ),
-              SizedBox(height: 18),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    final provider = Provider.of<HomeProvider>(
-                      context,
-                      listen: false,
-                    );
-                    _scrollController.position.jumpTo(0);
-                    _userScrollController.position.jumpTo(0);
-                    await provider.reset();
-                  },
-                  child: Consumer<HomeProvider>(
-                    builder: (context, value, child) {
-                      return CustomScrollView(
-                        controller: _scrollController,
-                        slivers: [
-                          SliverToBoxAdapter(
-                            child: SizedBox(
-                              height: 110,
-                              width: double.infinity,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                controller: _userScrollController,
-                                itemCount:
-                                    value.isUserLoading &&
-                                        !value.isUserPaginating
-                                    ? 6
-                                    : value.usersList.length + 1,
-                                itemBuilder: (context, index) {
-                                  if (value.isUserLoading &&
-                                      !value.isUserPaginating) {
-                                    return UserCard(
-                                      name: "",
-                                      profileImageUrl: "",
-                                      userGuid: "",
-                                      isUserLoading: true,
-                                    );
-                                  }
-                                  if (index < value.usersList.length) {
-                                    var user = value.usersList[index];
-                                    return UserCard(
-                                      key: ValueKey(user.employeeGuid),
-                                      name: user.employeeName,
-                                      profileImageUrl: user.profileImage,
-                                      userGuid: user.employeeGuid,
-                                      isUserLoading:
-                                          value.isUserLoading &&
-                                          !value.isUserPaginating,
-                                    );
-                                  } else {
-                                    return value.hasMore &&
-                                            value.isUserLoading &&
-                                            value.isUserPaginating
-                                        ? Padding(
-                                            padding: const EdgeInsets.all(16),
-                                            child: Center(
-                                              child: const SizedBox(
-                                                width: 25,
-                                                height: 25,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 3,
-                                                    ),
-                                              ),
-                                            ),
-                                          )
-                                        : const SizedBox.shrink();
-                                  }
-                                },
-                              ),
-                            ),
-                          ),
-
-                          SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                if (value.isLoading && !value.isPaginating) {
-                                  return FeedCard(
-                                    mediaFeed: dummyFeed,
-                                    isLoading: true,
+            ),
+            SizedBox(height: 18),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  final provider = Provider.of<HomeProvider>(
+                    context,
+                    listen: false,
+                  );
+                  _scrollController.position.jumpTo(0);
+                  _userScrollController.position.jumpTo(0);
+                  await provider.reset();
+                },
+                child: Consumer<HomeProvider>(
+                  builder: (context, value, child) {
+                    return CustomScrollView(
+                      controller: _scrollController,
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: SizedBox(
+                            height: 110,
+                            width: double.infinity,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              controller: _userScrollController,
+                              itemCount:
+                                  value.isUserLoading &&
+                                      !value.isUserPaginating
+                                  ? 6
+                                  : value.usersList.length + 1,
+                              itemBuilder: (context, index) {
+                                if (value.isUserLoading &&
+                                    !value.isUserPaginating) {
+                                  return UserCard(
+                                    name: "",
+                                    profileImageUrl: "",
+                                    userGuid: "",
+                                    isUserLoading: true,
                                   );
                                 }
-                                if (index < value.mediaFeeds.length) {
-                                  return FeedCard(
-                                    key: ValueKey(
-                                      value.mediaFeeds[index].mediaGuid,
-                                    ),
-                                    mediaFeed: value.mediaFeeds[index],
-                                    isLoading:
-                                        value.isLoading && !value.isPaginating,
+                                if (index < value.usersList.length) {
+                                  var user = value.usersList[index];
+                                  return UserCard(
+                                    key: ValueKey(user.employeeGuid),
+                                    name: user.employeeName,
+                                    profileImageUrl: user.profileImage,
+                                    userGuid: user.employeeGuid,
+                                    isUserLoading:
+                                        value.isUserLoading &&
+                                        !value.isUserPaginating,
                                   );
                                 } else {
-                                  return value.isLoading &&
-                                          value.isPaginating &&
-                                          value.hasMore
+                                  return value.hasMore &&
+                                          value.isUserLoading &&
+                                          value.isUserPaginating
                                       ? Padding(
                                           padding: const EdgeInsets.all(16),
                                           child: Center(
                                             child: const SizedBox(
                                               width: 25,
                                               height: 25,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 3,
-                                              ),
+                                              child:
+                                                  CircularProgressIndicator(
+                                                    strokeWidth: 3,
+                                                  ),
                                             ),
                                           ),
                                         )
                                       : const SizedBox.shrink();
                                 }
                               },
-                              childCount: value.isLoading && !value.isPaginating
-                                  ? 5
-                                  : value.mediaFeeds.length + 1,
                             ),
                           ),
-
-                          SliverToBoxAdapter(
-                            child: SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.13,
-                            ),
+                        ),
+          
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              if (value.isLoading && !value.isPaginating) {
+                                return FeedCard(
+                                  mediaFeed: dummyFeed,
+                                  isLoading: true,
+                                );
+                              }
+                              if (index < value.mediaFeeds.length) {
+                                return FeedCard(
+                                  key: ValueKey(
+                                    value.mediaFeeds[index].mediaGuid,
+                                  ),
+                                  mediaFeed: value.mediaFeeds[index],
+                                  isLoading:
+                                      value.isLoading && !value.isPaginating,
+                                );
+                              } else {
+                                return value.isLoading &&
+                                        value.isPaginating &&
+                                        value.hasMore
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Center(
+                                          child: const SizedBox(
+                                            width: 25,
+                                            height: 25,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 3,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    : const SizedBox.shrink();
+                              }
+                            },
+                            childCount: value.isLoading && !value.isPaginating
+                                ? 5
+                                : value.mediaFeeds.length + 1,
                           ),
-                        ],
-                      );
-                    },
-                  ),
+                        ),
+          
+                        SliverToBoxAdapter(
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.13,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -245,20 +243,21 @@ class FeedCard extends StatefulWidget {
   final AllMediaResponse mediaFeed;
   final bool isLoading;
 
-  const FeedCard({super.key, required this.mediaFeed, required this.isLoading});
+  FeedCard({super.key, required this.mediaFeed, required this.isLoading});
 
   @override
   State<FeedCard> createState() => _FeedCard();
 }
 
 class _FeedCard extends State<FeedCard> {
+  final AuthStorage _authStorage = AuthStorage();
   int currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Skeletonizer(
       enabled: widget.isLoading,
-      effect: const ShimmerEffect(
+      effect: ShimmerEffect(
         baseColor: Color(0xFFE0E0E0),
         highlightColor: Color(0xFFF5F5F5),
       ),
@@ -342,8 +341,8 @@ class _FeedCard extends State<FeedCard> {
                       colors: [
                         Colors.transparent,
                         Colors.transparent,
-                        Colors.black.withOpacity(0.3),
-                        Colors.black.withOpacity(0.7),
+                        Colors.black.withOpacity(0.1),
+                        Colors.black.withOpacity(0.5),
                       ],
                       stops: [0.0, 0.5, 0.8, 1.0],
                     ),
@@ -359,77 +358,99 @@ class _FeedCard extends State<FeedCard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        margin: EdgeInsets.only(top: 10, left: 8),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                vertical: 6,
-                                horizontal: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(25),
-                                border: Border.all(
-                                  color: Colors.white24,
-                                  width: 1.1,
+                      GestureDetector(
+                        onTap: () async {
+                          var loggedUserGuid = await _authStorage.getUserGuid();
+
+                          if (widget.mediaFeed.employeeGuid == loggedUserGuid) {
+                            GlassBottomNav.changeTab(2);
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChangeNotifierProvider(
+                                  create: (_) => AllUserProfileProvider(),
+                                  child: AllUserProfileScreen(
+                                    empGuid: widget.mediaFeed.employeeGuid!,
+                                  ),
                                 ),
-                                color: Colors.white24.withAlpha(30),
                               ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    height: 35,
-                                    width: 35,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white.withAlpha(90),
-                                      image:
-                                          widget.isLoading &&
-                                              widget
-                                                  .mediaFeed
-                                                  .profileImage
-                                                  .isEmpty
-                                          ? null
-                                          : DecorationImage(
-                                              image: NetworkImage(
-                                                widget.mediaFeed.profileImage,
+                            );
+                          }
+                        },
+                        child: Container(
+                          margin: EdgeInsets.only(top: 10, left: 8),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(50),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 6,
+                                  horizontal: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(25),
+                                  border: Border.all(
+                                    color: Colors.white24,
+                                    width: 1.1,
+                                  ),
+                                  color: Colors.white24.withAlpha(30),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      height: 35,
+                                      width: 35,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white.withAlpha(90),
+                                        image:
+                                            widget.isLoading &&
+                                                widget
+                                                    .mediaFeed
+                                                    .profileImage
+                                                    .isEmpty
+                                            ? null
+                                            : DecorationImage(
+                                                image: NetworkImage(
+                                                  widget.mediaFeed.profileImage,
+                                                ),
+                                                fit: BoxFit.cover,
                                               ),
-                                              fit: BoxFit.cover,
-                                            ),
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(width: 8),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        widget.mediaFeed.employeeName!
-                                            .capitalize(),
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontFamily: "Lexend",
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.2,
+                                    SizedBox(width: 8),
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          widget.mediaFeed.employeeName!
+                                              .capitalize(),
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontFamily: "Lexend",
+                                            fontWeight: FontWeight.w500,
+                                            height: 1.2,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        widget.mediaFeed.designation!
-                                            .capitalize(),
-                                        style: TextStyle(
-                                          fontSize: 9,
-                                          fontFamily: "Lexend",
-                                          fontWeight: FontWeight.w400,
-                                          height: 1.5,
+                                        Text(
+                                          widget.mediaFeed.designation!
+                                              .capitalize(),
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontFamily: "Lexend",
+                                            fontWeight: FontWeight.w400,
+                                            height: 1.5,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -553,16 +574,25 @@ class _FeedCard extends State<FeedCard> {
                                 SizedBox(width: 6),
                                 GestureDetector(
                                   onTap: () async {
-                                    Provider.of<HomeProvider>(
+                                    var provider = Provider.of<HomeProvider>(
                                       context,
                                       listen: false,
-                                    ).fetchLikedBy(widget.mediaFeed.mediaGuid!);
-                                    showModalBottomSheet(
-                                      context: context,
-                                      builder: (context) {
-                                        return LikedByBottomSheet();
-                                      },
                                     );
+                                    await provider.fetchLikedBy(
+                                      widget.mediaFeed.mediaGuid!,
+                                    );
+                                    provider.likedBy.isEmpty
+                                        ? null
+                                        : showModalBottomSheet(
+                                            context: context,
+                                            builder: (context) {
+                                              return LikedByBottomSheet(
+                                                isLikedByLoading:
+                                                    provider.isLikedByLoading,
+                                                likedByList: provider.likedBy,
+                                              );
+                                            },
+                                          );
                                   },
                                   child: Text(
                                     widget.mediaFeed.likesCount == 0
@@ -643,7 +673,13 @@ class _FeedCard extends State<FeedCard> {
 }
 
 class LikedByBottomSheet extends StatefulWidget {
-  const LikedByBottomSheet({super.key});
+  final bool isLikedByLoading;
+  final List<MediaLikedByResponse> likedByList;
+  const LikedByBottomSheet({
+    super.key,
+    required this.isLikedByLoading,
+    required this.likedByList,
+  });
 
   @override
   State<LikedByBottomSheet> createState() => _LikedByCard();
@@ -652,116 +688,111 @@ class LikedByBottomSheet extends StatefulWidget {
 class _LikedByCard extends State<LikedByBottomSheet> {
   @override
   Widget build(BuildContext context) {
-    return Consumer<HomeProvider>(
-      builder: (context, value, child) {
-        return ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.6,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      value.likedBy.isEmpty
-                          ? "Liked by 0"
-                          : "Liked by ${value.likedBy.first.totalLikes}",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontFamily: "Lexend",
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
+    return Flexible(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.6,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    widget.likedByList.isEmpty
+                        ? "Liked by 0"
+                        : "Liked by ${widget.likedByList.first.totalLikes}",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontFamily: "Lexend",
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                Divider(color: Colors.grey[400], thickness: 1),
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: value.likedBy.length,
-                    itemBuilder: (context, index) {
-                      if (value.isLikedByLoading) {
-                        return SizedBox.shrink();
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.only(
-                          left: 10,
-                          right: 10,
-                          top: 10,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              spacing: 10,
-                              children: [
-                                Container(
-                                  height: 36,
-                                  width: 36,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      image: NetworkImage(
-                                        value.likedBy[index].profileImage,
-                                      ),
-                                      fit: BoxFit.cover,
+              ),
+              Divider(color: Colors.grey[400], thickness: 1),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: widget.likedByList.length,
+                  itemBuilder: (context, index) {
+                    if (widget.isLikedByLoading) {
+                      return SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        left: 10,
+                        right: 10,
+                        top: 10,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            spacing: 10,
+                            children: [
+                              Container(
+                                height: 36,
+                                width: 36,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                      widget.likedByList[index].profileImage,
                                     ),
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      value.likedBy[index].employeeName
-                                          .capitalize(),
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontFamily: "Lexend",
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.2,
-                                      ),
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.likedByList[index].employeeName
+                                        .capitalize(),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontFamily: "Lexend",
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.2,
                                     ),
-                                    Text(
-                                      value.likedBy[index].designation
-                                          .capitalize(),
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontFamily: "Lexend",
-                                        fontWeight: FontWeight.w400,
-                                        height: 1.5,
-                                      ),
+                                  ),
+                                  Text(
+                                    widget.likedByList[index].designation
+                                        .capitalize(),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontFamily: "Lexend",
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.5,
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              "assets/images/like_icon.svg",
-                              height: 16,
-                              width: 16,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SvgPicture.asset(
+                            "assets/images/like_icon.svg",
+                            height: 16,
+                            width: 16,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

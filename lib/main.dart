@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:spotlight/provider/homeProvider.dart';
 import 'package:spotlight/provider/loginProvider.dart';
@@ -7,6 +8,15 @@ import 'package:spotlight/provider/uploadsProvider.dart';
 import 'package:spotlight/screens/preLogin/splashScreen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.white,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
+  
   runApp(
     MultiProvider(
       providers: [

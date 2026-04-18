@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:spotlight/core/Helpers.dart';
 import 'package:spotlight/models/allMediaResponse.dart';
-import 'package:spotlight/models/apiResponse.dart';
 import 'package:spotlight/models/mediaLikedByResponse.dart';
+import 'package:spotlight/provider/homeProvider.dart';
+import 'package:spotlight/provider/profileProvider.dart';
 import 'package:spotlight/services/authService/authStorage.dart';
 import 'package:spotlight/services/mediaService/mediaBaseService.dart';
 import 'package:spotlight/services/mediaService/mediaService.dart';
@@ -66,13 +69,13 @@ class UserPostProvider extends ChangeNotifier {
 
   Future<void> fetchLikedBy(String mediaGuid) async {
     try {
+      likedBy.clear();
       isLikedByLoading = true;
       notifyListeners();
 
       final likedData = await _mediaService.manageLikedBy(mediaGuid: mediaGuid);
 
       if (likedData.isNotEmpty) {
-        likedBy.clear();
         likedBy.addAll(likedData);
         notifyListeners();
       }
@@ -123,24 +126,42 @@ class UserPostProvider extends ChangeNotifier {
     }
   }
 
-  Future<ApiResponse> removeFeed(String mediaGuid) async {
+  void removeFeed(BuildContext context, String mediaGuid) async {
     try {
       if (!isLoggedUser) {
-        return ApiResponse(isSuccess: false, message: "Unauthorized access", responseCode: 409);
+        Helpers.showErrorSnackBar(
+          context,
+          "Unauthorized access cannot delete the post",
+        );
+        return;
       }
       final response = await _mediaService.deleteFeed(mediaGuid: mediaGuid);
 
-      if(response.isSuccess) {
+      if (response.isSuccess) {
         var index = mediaFeeds.indexWhere((m) => m.mediaGuid == mediaGuid);
-        if(index != -1) {
+        if (index != -1) {
           mediaFeeds.removeWhere((m) => m.mediaGuid == mediaGuid);
+
+          await Provider.of<HomeProvider>(context, listen: false).reset();
+          await Provider.of<ProfileProvider>(context, listen: false).reset();
+
+          if(mediaFeeds.isEmpty &&  Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
           notifyListeners();
         }
+      }else {
+        Helpers.showErrorSnackBar(
+        context, 
+        response.message ?? "Something went wrong, please try after sometime",
+      );
       }
-      return response;
     } catch (e) {
       debugPrint("Remove feed Error: $e");
-      rethrow;
+      Helpers.showErrorSnackBar(
+        context,
+        "Something went wrong, please try after sometime",
+      );
     }
   }
 }

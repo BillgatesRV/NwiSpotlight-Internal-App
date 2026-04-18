@@ -27,18 +27,15 @@ class LoginProvider extends ChangeNotifier {
   ) async {
     _isLoading = true;
     _errorMessage = null;
-    
+
     notifyListeners();
-    
+
     try {
       Helpers.showLoading(context);
-      final response = await _authService.employeeLogin(
-        email,
-        password,
-      );
+      final response = await _authService.employeeLogin(email, password);
 
       _loginResponse = response;
-      
+
       Navigator.of(context, rootNavigator: true).pop();
 
       if (response.status.toLowerCase() == "active") {
@@ -48,9 +45,10 @@ class LoginProvider extends ChangeNotifier {
           response.userGuid,
         );
 
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => GlassBottomNav()),
+          (route) => false,
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -3,15 +3,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spotlight/core/Helpers.dart';
 import 'package:spotlight/custom_controls/video_playerFeed.dart';
 import 'package:spotlight/models/allMediaResponse.dart';
-import 'package:spotlight/provider/homeProvider.dart';
-import 'package:spotlight/provider/profileProvider.dart';
+import 'package:spotlight/models/mediaLikedByResponse.dart';
 import 'package:spotlight/provider/userPostProvider.dart';
 
 class UserPostScreen extends StatefulWidget {
@@ -33,7 +31,7 @@ class _UserPostScreenState extends State<UserPostScreen> {
   void initState() {
     super.initState();
 
-    Future.microtask(() async { 
+    Future.microtask(() async {
       final provider = Provider.of<UserPostProvider>(context, listen: false);
       await provider.initialize(widget.empGuid);
       scrollToMedia(provider);
@@ -80,121 +78,117 @@ class _UserPostScreenState extends State<UserPostScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.white,
-        statusBarIconBrightness: Brightness.dark,
-      ),
-      child: SafeArea(
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 10, left: 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Icon(
-                        Icons.arrow_back,
-                        color: Colors.black,
-                        size: 26,
-                        fontWeight: FontWeight.w500,
-                      ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Padding(
+        padding: const EdgeInsets.only(top: 20),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 10, left: 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Colors.black,
+                      size: 26,
+                      fontWeight: FontWeight.w500,
                     ),
-                    Text(
-                      'Posts',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontFamily: "Lexend",
-                        fontWeight: FontWeight.w500,
-                      ),
+                  ),
+                  Text(
+                    'Posts',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontFamily: "Lexend",
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              SizedBox(height: 5),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    final provider = Provider.of<UserPostProvider>(
-                      context,
-                      listen: false,
-                    );
-                    _scrollController.position.jumpTo(0);
-                    await provider.reset();
-                  },
-                  child: Consumer<UserPostProvider>(
-                    builder: (context, value, child) {
-                      return CustomScrollView(
-                        controller: _scrollController,
-                        slivers: [
-                          SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                if (value.isLoading && !value.isPaginating) {
-                                  return FeedCard(
-                                    mediaFeed: dummyFeed,
-                                    isLoading: true,
-                                    isLoggedUser: false,
-                                  );
-                                }
-                                if (index < value.mediaFeeds.length) {
-                                  return AnimatedSwitcher(
-                                    duration: Duration(milliseconds: 300),
-                                    child: FeedCard(
-                                      key: ValueKey(
-                                        value.mediaFeeds[index].mediaGuid,
-                                      ),
-                                      mediaFeed: value.mediaFeeds[index],
-                                      isLoading:
-                                          value.isLoading && !value.isPaginating,
-                                      isLoggedUser: value.isLoggedUser,
+            ),
+            SizedBox(height: 5),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  final provider = Provider.of<UserPostProvider>(
+                    context,
+                    listen: false,
+                  );
+                  _scrollController.position.jumpTo(0);
+                  await provider.reset();
+                },
+                child: Consumer<UserPostProvider>(
+                  builder: (context, value, child) {
+                    return CustomScrollView(
+                      controller: _scrollController,
+                      slivers: [
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              if (value.isLoading && !value.isPaginating) {
+                                return FeedCard(
+                                  mediaFeed: dummyFeed,
+                                  isLoading: true,
+                                  isLoggedUser: false,
+                                );
+                              }
+                              if (index < value.mediaFeeds.length) {
+                                return AnimatedSwitcher(
+                                  duration: Duration(milliseconds: 300),
+                                  child: FeedCard(
+                                    key: ValueKey(
+                                      value.mediaFeeds[index].mediaGuid,
                                     ),
-                                  );
-                                } else {
-                                  return value.isLoading &&
-                                          value.isPaginating &&
-                                          value.hasMore
-                                      ? Padding(
-                                          padding: const EdgeInsets.all(16),
-                                          child: Center(
-                                            child: const SizedBox(
-                                              width: 25,
-                                              height: 25,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 3,
-                                              ),
+                                    mediaFeed: value.mediaFeeds[index],
+                                    isLoading:
+                                        value.isLoading &&
+                                        !value.isPaginating,
+                                    isLoggedUser: value.isLoggedUser,
+                                  ),
+                                );
+                              } else {
+                                return value.isLoading &&
+                                        value.isPaginating &&
+                                        value.hasMore
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Center(
+                                          child: const SizedBox(
+                                            width: 25,
+                                            height: 25,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 3,
                                             ),
                                           ),
-                                        )
-                                      : const SizedBox.shrink();
-                                }
-                              },
-                              childCount: value.isLoading && !value.isPaginating
-                                  ? 5
-                                  : value.mediaFeeds.length + 1,
-                            ),
+                                        ),
+                                      )
+                                    : const SizedBox.shrink();
+                              }
+                            },
+                            childCount: value.isLoading && !value.isPaginating
+                                ? 5
+                                : value.mediaFeeds.length + 1,
                           ),
-
-                          SliverToBoxAdapter(
-                            child: SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.04,
-                            ),
+                        ),
+          
+                        SliverToBoxAdapter(
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.04,
                           ),
-                        ],
-                      );
-                    },
-                  ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -308,8 +302,8 @@ class _FeedCard extends State<FeedCard> {
                       colors: [
                         Colors.transparent,
                         Colors.transparent,
-                        Colors.black.withOpacity(0.3),
-                        Colors.black.withOpacity(0.7),
+                        Colors.black.withOpacity(0.1),
+                        Colors.black.withOpacity(0.5),
                       ],
                       stops: [0.0, 0.5, 0.8, 1.0],
                     ),
@@ -449,7 +443,7 @@ class _FeedCard extends State<FeedCard> {
                                     ),
                                     items: [
                                       PopupMenuItem(
-                                        height: 40,
+                                        height: !widget.isLoggedUser ? 25 : 40,
                                         child: Row(
                                           children: [
                                             SvgPicture.asset(
@@ -479,81 +473,10 @@ class _FeedCard extends State<FeedCard> {
                                                   context,
                                                   listen: false,
                                                 );
-
-                                            try {
-                                              final response = await provider
-                                                  .removeFeed(
-                                                    widget.mediaFeed.mediaGuid!,
-                                                  );
-                                              if (response.isSuccess &&
-                                                  context.mounted) {
-                                                await Provider.of<HomeProvider>(
-                                                  context,
-                                                  listen: false,
-                                                ).reset();
-                                                await Provider.of<ProfileProvider>(
-                                                  context,
-                                                  listen: false,
-                                                  ).reset();
-                                              } else {
-                                                ScaffoldMessenger.of(
-                                                  context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      response.message
-                                                          .toString(),
-                                                    ),
-                                                    margin: EdgeInsets.only(
-                                                      left: 10,
-                                                      right: 10,
-                                                      top: 0,
-                                                      bottom: 40,
-                                                    ),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
-                                                    ),
-                                                    behavior: SnackBarBehavior
-                                                        .floating,
-                                                  ),
-                                                );
-                                              }
-                                            } catch (e) {
-                                              if (context.mounted &&
-                                                  Navigator.canPop(context)) {
-                                                Navigator.of(context).pop();
-                                              }
-
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    e.toString().replaceFirst(
-                                                      "Exception: ",
-                                                      "",
-                                                    ),
-                                                  ),
-                                                  margin: EdgeInsets.only(
-                                                    left: 10,
-                                                    right: 10,
-                                                    top: 0,
-                                                    bottom: 100,
-                                                  ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                  ),
-                                                  behavior:
-                                                      SnackBarBehavior.floating,
-                                                ),
-                                              );
-                                            }
+                                            provider.removeFeed(
+                                              context,
+                                              widget.mediaFeed.mediaGuid!,
+                                            );
                                           },
                                           height: 40,
                                           child: Row(
@@ -605,8 +528,8 @@ class _FeedCard extends State<FeedCard> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 GestureDetector(
-                                  onTap: () {
-                                    Provider.of<UserPostProvider>(
+                                  onTap: () async {
+                                    await Provider.of<UserPostProvider>(
                                       context,
                                       listen: false,
                                     ).toggleLike(widget.mediaFeed.mediaGuid!);
@@ -622,16 +545,26 @@ class _FeedCard extends State<FeedCard> {
                                 SizedBox(width: 6),
                                 GestureDetector(
                                   onTap: () async {
-                                    Provider.of<UserPostProvider>(
-                                      context,
-                                      listen: false,
-                                    ).fetchLikedBy(widget.mediaFeed.mediaGuid!);
-                                    showModalBottomSheet(
-                                      context: context,
-                                      builder: (context) {
-                                        return LikedByBottomSheet();
-                                      },
+                                    var provider =
+                                        Provider.of<UserPostProvider>(
+                                          context,
+                                          listen: false,
+                                        );
+                                    await provider.fetchLikedBy(
+                                      widget.mediaFeed.mediaGuid!,
                                     );
+                                    provider.likedBy.isEmpty
+                                        ? null
+                                        : showModalBottomSheet(
+                                            context: context,
+                                            builder: (context) {
+                                              return LikedByBottomSheet(
+                                                isLikedByLoading:
+                                                    provider.isLikedByLoading,
+                                                likedByList: provider.likedBy,
+                                              );
+                                            },
+                                          );
                                   },
                                   child: Text(
                                     widget.mediaFeed.likesCount == 0
@@ -712,7 +645,13 @@ class _FeedCard extends State<FeedCard> {
 }
 
 class LikedByBottomSheet extends StatefulWidget {
-  const LikedByBottomSheet({super.key});
+  final bool isLikedByLoading;
+  final List<MediaLikedByResponse> likedByList;
+  const LikedByBottomSheet({
+    super.key,
+    required this.isLikedByLoading,
+    required this.likedByList,
+  });
 
   @override
   State<LikedByBottomSheet> createState() => _LikedByCard();
@@ -721,116 +660,111 @@ class LikedByBottomSheet extends StatefulWidget {
 class _LikedByCard extends State<LikedByBottomSheet> {
   @override
   Widget build(BuildContext context) {
-    return Consumer<UserPostProvider>(
-      builder: (context, value, child) {
-        return ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.6,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      value.likedBy.isEmpty
-                          ? "Liked by 0"
-                          : "Liked by ${value.likedBy.first.totalLikes}",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontFamily: "Lexend",
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
+    return Flexible(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.6,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    widget.likedByList.isEmpty
+                        ? "Liked by 0"
+                        : "Liked by ${widget.likedByList.first.totalLikes}",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontFamily: "Lexend",
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                Divider(color: Colors.grey[400], thickness: 1),
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: value.likedBy.length,
-                    itemBuilder: (context, index) {
-                      if (value.isLikedByLoading) {
-                        return SizedBox.shrink();
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.only(
-                          left: 10,
-                          right: 10,
-                          top: 10,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              spacing: 10,
-                              children: [
-                                Container(
-                                  height: 36,
-                                  width: 36,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      image: NetworkImage(
-                                        value.likedBy[index].profileImage,
-                                      ),
-                                      fit: BoxFit.cover,
+              ),
+              Divider(color: Colors.grey[400], thickness: 1),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: widget.likedByList.length,
+                  itemBuilder: (context, index) {
+                    if (widget.isLikedByLoading) {
+                      return SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        left: 10,
+                        right: 10,
+                        top: 10,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            spacing: 10,
+                            children: [
+                              Container(
+                                height: 36,
+                                width: 36,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                      widget.likedByList[index].profileImage,
                                     ),
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      value.likedBy[index].employeeName
-                                          .capitalize(),
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontFamily: "Lexend",
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.2,
-                                      ),
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.likedByList[index].employeeName
+                                        .capitalize(),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontFamily: "Lexend",
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.2,
                                     ),
-                                    Text(
-                                      value.likedBy[index].designation
-                                          .capitalize(),
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontFamily: "Lexend",
-                                        fontWeight: FontWeight.w400,
-                                        height: 1.5,
-                                      ),
+                                  ),
+                                  Text(
+                                    widget.likedByList[index].designation
+                                        .capitalize(),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontFamily: "Lexend",
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.5,
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              "assets/images/like_icon.svg",
-                              height: 16,
-                              width: 16,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SvgPicture.asset(
+                            "assets/images/like_icon.svg",
+                            height: 16,
+                            width: 16,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

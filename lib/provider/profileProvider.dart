@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:spotlight/core/Helpers.dart';
 import 'package:spotlight/models/employeeProfileResponse.dart';
 import 'package:spotlight/models/userAllMediaResponse.dart';
+import 'package:spotlight/screens/preLogin/login_page.dart';
+import 'package:spotlight/services/authService/authStorage.dart';
 import 'package:spotlight/services/employeeProfileService/profileBaseService.dart';
 import 'package:spotlight/services/employeeProfileService/profileService.dart';
 import 'package:spotlight/services/mediaService/mediaBaseService.dart';
@@ -10,6 +12,7 @@ import 'package:spotlight/services/mediaService/mediaService.dart';
 class ProfileProvider extends ChangeNotifier {
   final ProfileBaseService _profileService = ProfileService();
   final MediaBaseService _mediaService = MediaService();
+  final AuthStorage _authStorage = AuthStorage();
 
   EmployeeProfileResponse? profileDate;
   List<UserAllMediaResponse> userMedia = [];
@@ -28,7 +31,7 @@ class ProfileProvider extends ChangeNotifier {
 
     await fetchProfileData();
     await fetchFeeds();
-    
+
     isLoading = false;
     notifyListeners();
   }
@@ -84,7 +87,6 @@ class ProfileProvider extends ChangeNotifier {
   Future<void> fetchFeeds() async {
     if (!hasMore) return;
 
-
     try {
       final newData = await _mediaService.fetchAllUserMedia(
         _pageNumber,
@@ -95,13 +97,13 @@ class ProfileProvider extends ChangeNotifier {
         isUserFeed = true;
         hasMore = false;
       } else {
-        for(var media in newData){
+        for (var media in newData) {
           var isVideo = Helpers.isVideo(media.mediaThumb);
-          if(isVideo){
+          if (isVideo) {
             media.videoThumb = await Helpers.getThumbnail(media.mediaThumb);
           }
         }
-        
+
         userMedia.addAll(newData);
         _pageNumber++;
       }
@@ -110,8 +112,16 @@ class ProfileProvider extends ChangeNotifier {
       debugPrint("Pagination error: $e");
     }
 
-    // isLoading = false;
     notifyListeners();
+  }
+
+  void logout(BuildContext context) async {
+    await _authStorage.clear();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => LoginScreen()),
+      (route) => false,
+    );
   }
 
   Future<void> reset() async {

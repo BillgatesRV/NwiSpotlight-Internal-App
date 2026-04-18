@@ -31,10 +31,7 @@ class HomeProvider extends ChangeNotifier {
   String? errorMessage;
 
   Future<void> initialize() async {
-    await Future.wait([
-      fetchUsers(),
-      fetchFeeds(),
-    ]);
+    await Future.wait([fetchUsers(), fetchFeeds()]);
   }
 
   Future<void> fetchFeeds() async {
@@ -70,13 +67,13 @@ class HomeProvider extends ChangeNotifier {
 
   Future<void> fetchLikedBy(String mediaGuid) async {
     try {
+      likedBy.clear();
       isLikedByLoading = true;
       notifyListeners();
 
       final likedData = await _mediaService.manageLikedBy(mediaGuid: mediaGuid);
 
       if (likedData.isNotEmpty) {
-        likedBy.clear();
         likedBy.addAll(likedData);
         notifyListeners();
       }
@@ -98,10 +95,7 @@ class HomeProvider extends ChangeNotifier {
     userHasMore = true;
     errorMessage = null;
 
-    await Future.wait([
-     fetchUsers(),
-     fetchFeeds(), 
-    ]);
+    await Future.wait([fetchUsers(), fetchFeeds()]);
   }
 
   Future<void> toggleLike(String mediaGuid) async {

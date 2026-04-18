@@ -34,8 +34,6 @@ class MediaService extends MediaBaseService {
         },
       );
 
-      debugPrint(token);
-
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
 
@@ -277,8 +275,6 @@ class MediaService extends MediaBaseService {
         },
       );
 
-      debugPrint(token);
-
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
 
@@ -302,7 +298,9 @@ class MediaService extends MediaBaseService {
   @override
   Future<ApiResponse> deleteFeed({required String mediaGuid}) async {
     try {
-      final url = Uri.parse("${Urls.baseUrl}employee/media/delete-employee-media?mediaGuid=$mediaGuid");
+      final url = Uri.parse(
+        "${Urls.baseUrl}employee/media/delete-employee-media?mediaGuid=$mediaGuid",
+      );
 
       String? token = await _authStorage.getToken();
 
@@ -316,14 +314,15 @@ class MediaService extends MediaBaseService {
 
       final responseData = jsonDecode(response.body);
 
-      if (responseData["responseCode"] == 200) {
-        return (responseData["message"] ?? "feed deleted sucessfully");
-      } else {
-        throw Exception(responseData["message"] ?? "failed to delete feed");
-      }
+      return ApiResponse.fromJson(responseData);
     } catch (e) {
       debugPrint("Error: $e");
-      throw Exception(e.toString());
+      return ApiResponse(
+        result: null,
+        isSuccess: false,
+        message: "Something went wrong",
+        responseCode: 500,
+      );
     }
   }
 }

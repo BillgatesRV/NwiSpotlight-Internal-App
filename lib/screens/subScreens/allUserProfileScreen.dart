@@ -44,333 +44,312 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
     final profileProvider = context.watch<AllUserProfileProvider>();
 
     if (profileProvider.isLoading) {
-      return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
-          statusBarColor: Colors.white,
-          statusBarIconBrightness: Brightness.dark,
-        ),
-        child: SafeArea(
-          child: Scaffold(
-            backgroundColor: Colors.white,
-            body: Center(child: CircularProgressIndicator()),
-          ),
-        ),
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (profileProvider.profileDate == null) {
-      return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
-          statusBarColor: Colors.white,
-          statusBarIconBrightness: Brightness.dark,
-        ),
-        child: SafeArea(
-          child: Scaffold(
-            backgroundColor: Colors.white,
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Text(
-                  'Something went wrong please try again later...',
-                  style: TextStyle(
-                    fontFamily: "Lexend",
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    overflow: TextOverflow.clip,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Text(
+              'Something went wrong please try again later...',
+              style: TextStyle(
+                fontFamily: "Lexend",
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                overflow: TextOverflow.clip,
               ),
+              textAlign: TextAlign.center,
             ),
           ),
         ),
       );
     }
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.white,
-        statusBarIconBrightness: Brightness.dark,
-      ),
-      child: SafeArea(
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          body: Column(
-            children: [
-              Stack(
-                alignment: AlignmentGeometry.bottomCenter,
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    height: 130,
+    return Padding(
+      padding: const EdgeInsets.only(top: 30),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Column(
+          children: [
+            Stack(
+              alignment: AlignmentGeometry.bottomCenter,
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  height: 130,
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/profile_cover.jpg'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -60,
+                  child: Container(
+                    padding: EdgeInsets.all(5),
                     decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(20),
-                        bottomRight: Radius.circular(20),
-                      ),
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/profile_cover.jpg'),
-                        fit: BoxFit.cover,
-                      ),
+                      color: Colors.white,
+                      shape: BoxShape.circle,
                     ),
-                  ),
-                  Positioned(
-                    bottom: -60,
-                    child: Container(
-                      padding: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundImage:
-                            profileProvider.profileDate!.profileImage.isNotEmpty
-                            ? CachedNetworkImageProvider(
-                                profileProvider.profileDate!.profileImage,
-                              )
-                            : AssetImage('assets/images/user_profile.jpg')
-                                  as ImageProvider,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 6,
-                    left: 6,
                     child: CircleAvatar(
-                      radius: 17,
-                      backgroundColor: Colors.white60,
-                      child: IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        icon: Icon(
-                          Icons.arrow_back_ios_new,
+                      radius: 50,
+                      backgroundImage:
+                          profileProvider.profileDate!.profileImage.isNotEmpty
+                          ? CachedNetworkImageProvider(
+                              profileProvider.profileDate!.profileImage,
+                            )
+                          : AssetImage('assets/images/user_profile.jpg')
+                                as ImageProvider,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 6,
+                  left: 6,
+                  child: CircleAvatar(
+                    radius: 17,
+                    backgroundColor: Colors.white60,
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.black,
+                        size: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 70),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                profileProvider.profileDate!.employeeName.isNotEmpty
+                    ? profileProvider.profileDate!.employeeName.capitalize()
+                    : "User",
+                style: TextStyle(
+                  fontFamily: "Lexend",
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                profileProvider.profileDate!.designation.isNotEmpty
+                    ? profileProvider.profileDate!.designation.capitalize()
+                    : "Developer",
+                style: TextStyle(
+                  fontFamily: "Lexend",
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  overflow: TextOverflow.clip,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(height: 25),
+            IntrinsicHeight(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(
+                    spacing: 4,
+                    children: [
+                      Text(
+                        profileProvider.profileDate!.employeeId.isNotEmpty
+                            ? profileProvider.profileDate!.employeeId
+                            : "NWIUSER",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontFamily: 'Lexend',
+                          fontWeight: FontWeight.w400,
                           color: Colors.black,
-                          size: 15,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
+                      Text(
+                        "Employee Id",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'Lexend',
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+          
+                  VerticalDivider(
+                    width: 15,
+                    radius: BorderRadius.circular(10),
+                    thickness: 1,
+                    color: Colors.grey[500],
+                  ),
+          
+                  Column(
+                    spacing: 4,
+                    children: [
+                      Text(
+                        "${profileProvider.userMedia.isNotEmpty ? profileProvider.userMedia.first.totalCount : 0}",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontFamily: 'Lexend',
+                          fontWeight: FontWeight.w400,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Text(
+                        "Post",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'Lexend',
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+          
+                  VerticalDivider(
+                    width: 15,
+                    radius: BorderRadius.circular(10),
+                    thickness: 1,
+                    color: Colors.grey[500],
+                  ),
+          
+                  Column(
+                    spacing: 4,
+                    children: [
+                      Text(
+                        profileProvider.profileDate!.dojInYears.isNotEmpty
+                            ? profileProvider.profileDate!.dojInYears
+                            : "Recently Joined",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontFamily: 'Lexend',
+                          fontWeight: FontWeight.w400,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Text(
+                        "Since Joined",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'Lexend',
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              SizedBox(height: 70),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  profileProvider.profileDate!.employeeName.isNotEmpty
-                      ? profileProvider.profileDate!.employeeName.capitalize()
-                      : "User",
-                  style: TextStyle(
-                    fontFamily: "Lexend",
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+            ),
+          
+            SizedBox(height: 15),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Divider(
+                height: 15,
+                color: Colors.grey[500],
+                radius: BorderRadius.circular(10),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Text(
-                  profileProvider.profileDate!.designation.isNotEmpty
-                      ? profileProvider.profileDate!.designation.capitalize()
-                      : "Developer",
-                  style: TextStyle(
-                    fontFamily: "Lexend",
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    overflow: TextOverflow.clip,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              SizedBox(height: 25),
-              IntrinsicHeight(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Column(
-                      spacing: 4,
+            ),
+            SizedBox(height: 10),
+          
+            Expanded(
+              child: profileProvider.userMedia.isEmpty
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 20,
                       children: [
-                        Text(
-                          profileProvider.profileDate!.employeeId.isNotEmpty
-                              ? profileProvider.profileDate!.employeeId
-                              : "NWIUSER",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontFamily: 'Lexend',
-                            fontWeight: FontWeight.w400,
-                            color: Colors.black,
-                          ),
+                        SvgPicture.asset(
+                          'assets/images/no_feed_added.svg',
+                          fit: BoxFit.contain,
+                          height: 200,
+                          width: 200,
                         ),
                         Text(
-                          "Employee Id",
+                          "Nothing to see here… yet",
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             fontFamily: 'Lexend',
                             fontWeight: FontWeight.w400,
-                            color: Colors.grey[600],
+                            color: Colors.grey[800],
                           ),
                         ),
                       ],
-                    ),
-
-                    VerticalDivider(
-                      width: 15,
-                      radius: BorderRadius.circular(10),
-                      thickness: 1,
-                      color: Colors.grey[500],
-                    ),
-
-                    Column(
-                      spacing: 4,
-                      children: [
-                        Text(
-                          "${profileProvider.userMedia.isNotEmpty ? profileProvider.userMedia.first.totalCount : 0}",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontFamily: 'Lexend',
-                            fontWeight: FontWeight.w400,
-                            color: Colors.black,
+                    )
+                  : MasonryGridView.builder(
+                      controller: _scrollController,
+                      gridDelegate:
+                          SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
                           ),
-                        ),
-                        Text(
-                          "Post",
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontFamily: 'Lexend',
-                            fontWeight: FontWeight.w400,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    VerticalDivider(
-                      width: 15,
-                      radius: BorderRadius.circular(10),
-                      thickness: 1,
-                      color: Colors.grey[500],
-                    ),
-
-                    Column(
-                      spacing: 4,
-                      children: [
-                        Text(
-                          profileProvider.profileDate!.dojInYears.isNotEmpty
-                              ? profileProvider.profileDate!.dojInYears
-                              : "Recently Joined",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontFamily: 'Lexend',
-                            fontWeight: FontWeight.w400,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          "Since Joined",
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontFamily: 'Lexend',
-                            fontWeight: FontWeight.w400,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              SizedBox(height: 15),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Divider(
-                  height: 15,
-                  color: Colors.grey[500],
-                  radius: BorderRadius.circular(10),
-                ),
-              ),
-              SizedBox(height: 10),
-
-              Expanded(
-                child: profileProvider.userMedia.isEmpty
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        spacing: 20,
-                        children: [
-                          SvgPicture.asset(
-                            'assets/images/no_feed_added.svg',
-                            fit: BoxFit.contain,
-                            height: 200,
-                            width: 200,
-                          ),
-                          Text(
-                            "Nothing to see here… yet",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Lexend',
-                              fontWeight: FontWeight.w400,
-                              color: Colors.grey[800],
-                            ),
-                          ),
-                        ],
-                      )
-                    : MasonryGridView.builder(
-                        controller: _scrollController,
-                        gridDelegate:
-                            SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                            ),
-                        padding: EdgeInsets.fromLTRB(10, 10, 10, 30),
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 10,
-                        itemCount: profileProvider.userMedia.length,
-                        itemBuilder: (context, index) {
-                          var feed = profileProvider.userMedia[index];
-                          var isVideo = Helpers.isVideo(feed.mediaThumb);
-
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ChangeNotifierProvider(
-                                    create: (_) => UserPostProvider(),
-                                    child: UserPostScreen(
-                                      empGuid: widget.empGuid,
-                                      mediaGuid: feed.mediaGuid,
-                                    ),
+                      padding: EdgeInsets.fromLTRB(10, 10, 10, 30),
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 10,
+                      itemCount: profileProvider.userMedia.length,
+                      itemBuilder: (context, index) {
+                        var feed = profileProvider.userMedia[index];
+                        var isVideo = Helpers.isVideo(feed.mediaThumb);
+          
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChangeNotifierProvider(
+                                  create: (_) => UserPostProvider(),
+                                  child: UserPostScreen(
+                                    empGuid: widget.empGuid,
+                                    mediaGuid: feed.mediaGuid,
                                   ),
                                 ),
-                              );
-                            },
-                            child: Container(
-                              height: 180,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: isVideo
-                                      ? MemoryImage(feed.videoThumb!)
-                                      : NetworkImage(feed.mediaThumb),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    blurRadius: 6,
-                                    color: Colors.grey.shade200,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
                               ),
+                            );
+                          },
+                          child: Container(
+                            height: 180,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: isVideo
+                                    ? MemoryImage(feed.videoThumb!)
+                                    : NetworkImage(feed.mediaThumb),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 6,
+                                  color: Colors.grey.shade200,
+                                  spreadRadius: 2,
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
         ),
       ),
     );

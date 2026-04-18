@@ -145,6 +145,7 @@ class UploadsProvider extends ChangeNotifier {
         caption: caption,
         media: processedMedia,
       );
+
       return responseMessage;
     } catch (e) {
       notifyListeners();
@@ -162,10 +163,5 @@ class UploadsProvider extends ChangeNotifier {
       c.dispose();
     }
     super.dispose();
-  }
-
-  bool isVideo(String path) {
-    final extension = path.split('.').last.toLowerCase();
-    return ['mp4', 'mov', 'avi', 'mkv', 'webm', '3gp'].contains(extension);
   }
 }

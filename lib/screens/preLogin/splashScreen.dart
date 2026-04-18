@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:spotlight/common_components/tabbar.dart';
 import 'package:spotlight/screens/preLogin/login_page.dart';
 import 'package:spotlight/services/authService/authStorage.dart';
@@ -31,30 +30,23 @@ class _SplashScreen extends State<SplashScreen> {
         MaterialPageRoute(builder: (context) => GlassBottomNav()),
       );
     } else {
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),
+        (route) => false,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.white,
-        statusBarIconBrightness: Brightness.dark,
-      ),
-      child: SafeArea(
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          body: Center(
-            child: Image.asset(
-              "assets/images/splash_icon.png",
-              height: 80,
-              width: 80,
-            ),
-          ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Image.asset(
+          "assets/images/splash_icon.png",
+          height: 80,
+          width: 80,
         ),
       ),
     );
