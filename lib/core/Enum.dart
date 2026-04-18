@@ -1,0 +1,4 @@
+enum UploadType {
+  images,
+  videos
+}
