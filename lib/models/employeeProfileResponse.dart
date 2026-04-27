@@ -8,6 +8,8 @@ class EmployeeProfileResponse {
   String profileImage;
   int uploadPoints;
   String dojInYears;
+  String? coverImgGuid;
+  String? coverImageUrl;
   DateTime? addedOn;
 
   EmployeeProfileResponse({
@@ -20,6 +22,8 @@ class EmployeeProfileResponse {
     required this.profileImage,
     required this.uploadPoints,
     required this.dojInYears,
+    this.coverImgGuid,
+    this.coverImageUrl,
     this.addedOn,
   });
 
@@ -33,6 +37,8 @@ class EmployeeProfileResponse {
       mobile : json['mobile'],
       profileImage : json['profileImage'],
       uploadPoints : json['uploadPoints'],
+      coverImgGuid : json['coverImgGuid'],
+      coverImageUrl : json['coverImageUrl'],
       dojInYears : json['doj'],
       addedOn : json['addedOn'] = DateTime.parse(json['addedOn']),
     );

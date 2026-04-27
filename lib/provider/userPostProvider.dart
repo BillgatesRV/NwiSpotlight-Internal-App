@@ -18,7 +18,7 @@ class UserPostProvider extends ChangeNotifier {
   var isLoggedUser = false;
 
   int _pageNumber = 1;
-  final int _pageSize = 20;
+  final int _pageSize = 30;
   String userGuid = "";
 
   bool isLoading = true;
@@ -131,7 +131,7 @@ class UserPostProvider extends ChangeNotifier {
       if (!isLoggedUser) {
         Helpers.showErrorSnackBar(
           context,
-          "Unauthorized access cannot delete the post",
+          message: "Unauthorized access cannot delete the post",
         );
         return;
       }
@@ -145,22 +145,21 @@ class UserPostProvider extends ChangeNotifier {
           await Provider.of<HomeProvider>(context, listen: false).reset();
           await Provider.of<ProfileProvider>(context, listen: false).reset();
 
-          if(mediaFeeds.isEmpty &&  Navigator.canPop(context)) {
+          if (mediaFeeds.isEmpty && Navigator.canPop(context)) {
             Navigator.pop(context);
           }
           notifyListeners();
         }
-      }else {
+      } else {
         Helpers.showErrorSnackBar(
-        context, 
-        response.message ?? "Something went wrong, please try after sometime",
-      );
+          context,
+          message: response.message,
+        );
       }
     } catch (e) {
       debugPrint("Remove feed Error: $e");
       Helpers.showErrorSnackBar(
         context,
-        "Something went wrong, please try after sometime",
       );
     }
   }

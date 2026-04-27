@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -14,7 +15,9 @@ import 'package:spotlight/models/allMediaResponse.dart';
 import 'package:spotlight/models/mediaLikedByResponse.dart';
 import 'package:spotlight/provider/allUserProfileProvider.dart';
 import 'package:spotlight/provider/homeProvider.dart';
+import 'package:spotlight/provider/postUploadsProvider.dart';
 import 'package:spotlight/screens/subScreens/allUserProfileScreen.dart';
+import 'package:spotlight/screens/subScreens/postUploads.dart';
 import 'package:spotlight/services/authService/authStorage.dart';
 
 class HomePage extends StatefulWidget {
@@ -72,21 +75,48 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 25),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+
+        bool? shouldClose = await Helpers.showDialogAlert(
+          context,
+          title: "Exit app",
+          content: "Do you want to exit the app?",
+          accept: "Exit",
+          reject: "Cancel",
+        );
+        if (shouldClose == true) {
+          SystemNavigator.pop();
+        }
+      },
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: Column( 
+        body: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
+              padding: const EdgeInsets.only(top: 45, left: 20, right: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SvgPicture.asset(
-                    "assets/images/media_icon.svg",
-                    height: 22,
-                    width: 22,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ChangeNotifierProvider(
+                            create: (_) => PostUploadsProvider(),
+                            child: const PostUploads(),
+                          ),
+                        ),
+                      );
+                    },
+                    child: SvgPicture.asset(
+                      "assets/images/media_icon.svg",
+                      height: 22,
+                      width: 22,
+                    ),
                   ),
                   Text(
                     'Spotlight',
@@ -129,8 +159,7 @@ class _HomePageState extends State<HomePage> {
                               scrollDirection: Axis.horizontal,
                               controller: _userScrollController,
                               itemCount:
-                                  value.isUserLoading &&
-                                      !value.isUserPaginating
+                                  value.isUserLoading && !value.isUserPaginating
                                   ? 6
                                   : value.usersList.length + 1,
                               itemBuilder: (context, index) {
@@ -164,10 +193,9 @@ class _HomePageState extends State<HomePage> {
                                             child: const SizedBox(
                                               width: 25,
                                               height: 25,
-                                              child:
-                                                  CircularProgressIndicator(
-                                                    strokeWidth: 3,
-                                                  ),
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 3,
+                                              ),
                                             ),
                                           ),
                                         )
@@ -177,7 +205,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-          
+
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
@@ -220,7 +248,7 @@ class _HomePageState extends State<HomePage> {
                                 : value.mediaFeeds.length + 1,
                           ),
                         ),
-          
+
                         SliverToBoxAdapter(
                           child: SizedBox(
                             height: MediaQuery.of(context).size.height * 0.13,

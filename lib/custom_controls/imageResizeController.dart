@@ -46,15 +46,19 @@ class ZoomableImage extends StatefulWidget {
   final BoxFit fit;
   final VoidCallback? onInteractionStart;
   final VoidCallback? onInteractionEnd;
+  final double minScale;
+  final double maxScale;
 
   const ZoomableImage({
     super.key,
     required this.image,
     this.controller,
     this.height = 350,
-    this.fit = BoxFit.contain,
+    this.fit = BoxFit.cover,
     this.onInteractionStart,
     this.onInteractionEnd,
+    this.minScale = 0.5, 
+    this.maxScale = 5.0,
   });
 
   @override
@@ -92,8 +96,8 @@ Widget build(BuildContext context) {
       child: ClipRect(      
         child: InteractiveViewer(
           transformationController: _ctrl.transformationController,
-          minScale: 0.5,
-          maxScale: 5.0,
+          minScale:  widget.minScale,
+          maxScale: widget.maxScale,
           clipBehavior: Clip.hardEdge,
           onInteractionStart: (_) => widget.onInteractionStart?.call(),
           onInteractionEnd: (_) => widget.onInteractionEnd?.call(),

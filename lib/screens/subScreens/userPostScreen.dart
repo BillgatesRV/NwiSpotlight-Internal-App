@@ -81,7 +81,7 @@ class _UserPostScreenState extends State<UserPostScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.only(top: 20),
+        padding: const EdgeInsets.only(top: 30),
         child: Column(
           children: [
             Padding(
@@ -130,6 +130,9 @@ class _UserPostScreenState extends State<UserPostScreen> {
                       slivers: [
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
+                            childCount: value.isLoading && !value.isPaginating
+                                ? 5
+                                : value.mediaFeeds.length + 1,
                             (context, index) {
                               if (value.isLoading && !value.isPaginating) {
                                 return FeedCard(
@@ -147,8 +150,7 @@ class _UserPostScreenState extends State<UserPostScreen> {
                                     ),
                                     mediaFeed: value.mediaFeeds[index],
                                     isLoading:
-                                        value.isLoading &&
-                                        !value.isPaginating,
+                                        value.isLoading && !value.isPaginating,
                                     isLoggedUser: value.isLoggedUser,
                                   ),
                                 );
@@ -171,12 +173,9 @@ class _UserPostScreenState extends State<UserPostScreen> {
                                     : const SizedBox.shrink();
                               }
                             },
-                            childCount: value.isLoading && !value.isPaginating
-                                ? 5
-                                : value.mediaFeeds.length + 1,
                           ),
                         ),
-          
+
                         SliverToBoxAdapter(
                           child: SizedBox(
                             height: MediaQuery.of(context).size.height * 0.04,

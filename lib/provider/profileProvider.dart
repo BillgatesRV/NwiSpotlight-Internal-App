@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:spotlight/core/Helpers.dart';
 import 'package:spotlight/models/employeeProfileResponse.dart';
 import 'package:spotlight/models/userAllMediaResponse.dart';
@@ -21,18 +24,22 @@ class ProfileProvider extends ChangeNotifier {
   final int _pageSize = 10;
 
   bool isLoading = false;
+  bool isCoverImgLoading = false;
   bool isUserFeed = false;
   bool hasMore = true;
   String? errorMessage;
+  String? coverImage;
 
   Future<void> initialize() async {
     isLoading = true;
+    isCoverImgLoading = true;
     notifyListeners();
 
     await fetchProfileData();
     await fetchFeeds();
 
     isLoading = false;
+    isCoverImgLoading = false;
     notifyListeners();
   }
 
@@ -46,42 +53,6 @@ class ProfileProvider extends ChangeNotifier {
       errorMessage = e.toString();
       debugPrint("profile data Error: $e");
     }
-  }
-
-  Future<void> fetchOthersProfileData(String empGuid) async {
-    try {
-      final profileResponse = await _profileService
-          .fetchOtherEmployeeProfileDetail(empGuid);
-
-      profileDate = profileResponse;
-    } catch (e) {
-      errorMessage = e.toString();
-      debugPrint("profile data Error: $e");
-    }
-  }
-
-  Future<void> fetchOthersFeeds(String empGuid) async {
-    if (!hasMore) return;
-    try {
-      final newData = await _mediaService.fetchAllOthersUserMedia(
-        empGuid,
-        _pageNumber,
-        _pageSize,
-      );
-
-      if (newData.isEmpty) {
-        isUserFeed = true;
-        hasMore = false;
-      } else {
-        userMedia.addAll(newData);
-        _pageNumber++;
-      }
-    } catch (e) {
-      errorMessage = e.toString();
-      debugPrint("Pagination error: $e");
-    }
-
-    notifyListeners();
   }
 
   Future<void> fetchFeeds() async {
@@ -113,6 +84,53 @@ class ProfileProvider extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  Future<void> pickCoverImage(BuildContext context) async {
+    final picker = ImagePicker();
+
+    final XFile? picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 100,
+    );
+
+    if (picked == null) return;
+    try {
+      CroppedFile? cropped = await ImageCropper().cropImage(
+      sourcePath: picked.path,
+      aspectRatio: CropAspectRatio(ratioX: 26, ratioY: 9),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Image',
+          lockAspectRatio: true,
+        ),
+        IOSUiSettings(
+          title: 'Crop Image',
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: true,
+        ),
+      ],
+    );
+
+    if (cropped != null) {
+      isCoverImgLoading = true;
+      notifyListeners();
+      
+      File croppedImage = File(cropped.path);
+      final response = await _profileService.addCoverImage(croppedImage);
+
+      if(response.responseCode == 201) {
+        profileDate!.coverImageUrl = croppedImage.path;
+      } else {
+        Helpers.showErrorSnackBar(context, message: response.message);
+      }
+    }
+    } catch (e) {
+       Helpers.showErrorSnackBar(context, message: e.toString());
+    } finally {
+      isCoverImgLoading = false;
+      notifyListeners();
+    }
   }
 
   void logout(BuildContext context) async {

@@ -24,7 +24,6 @@ class _UploadPageState extends State<UploadPage> {
   bool isMediaError = false;
   bool isCaptionError = false;
   bool _isZooming = false;
-  final FocusNode _captionFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +31,7 @@ class _UploadPageState extends State<UploadPage> {
       resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.only(top: 25),
+        padding: const EdgeInsets.only(top: 30),
         child: Column(
           children: [
             Padding(
@@ -69,13 +68,13 @@ class _UploadPageState extends State<UploadPage> {
                           final message = await provider.addFeed(
                             _captionController.text,
                           );
-
+    
                           provider.pickedMedia.clear();
                           provider.item = null;
                           _captionController.text = "";
-
+    
                           Helpers.hideLoading(context);
-
+    
                           if (context.mounted) {
                             Provider.of<HomeProvider>(
                               context,
@@ -85,7 +84,7 @@ class _UploadPageState extends State<UploadPage> {
                               context,
                               listen: false,
                             ).reset();
-
+    
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(message.toString()),
@@ -106,7 +105,7 @@ class _UploadPageState extends State<UploadPage> {
                           if (context.mounted && Navigator.canPop(context)) {
                             Navigator.of(context).pop();
                           }
-
+    
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
@@ -204,7 +203,7 @@ class _UploadPageState extends State<UploadPage> {
                                       width: double.infinity,
                                       fit: BoxFit.cover,
                                     ),
-
+    
                               if (_isZooming)
                                 IgnorePointer(
                                   child: AnimatedOpacity(
@@ -329,7 +328,7 @@ class _UploadPageState extends State<UploadPage> {
                                             await provider.openGallery(
                                               UploadType.images,
                                             );
-
+    
                                             if (mounted &&
                                                 provider.errorMessage != null) {
                                               ScaffoldMessenger.of(
@@ -385,11 +384,11 @@ class _UploadPageState extends State<UploadPage> {
                                                   context,
                                                   listen: false,
                                                 );
-
+    
                                             await provider.openGallery(
                                               UploadType.videos,
                                             );
-
+    
                                             if (mounted &&
                                                 provider.errorMessage != null) {
                                               ScaffoldMessenger.of(
@@ -479,7 +478,6 @@ class _UploadPageState extends State<UploadPage> {
                         horizontal: 12,
                       ),
                       child: TextFormField(
-                        focusNode: _captionFocusNode,
                         controller: _captionController,
                         minLines: 1,
                         maxLines: null,

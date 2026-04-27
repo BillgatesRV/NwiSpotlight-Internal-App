@@ -1,10 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spotlight/core/Helpers.dart';
+import 'package:spotlight/models/userAllMediaResponse.dart';
 import 'package:spotlight/provider/allUserProfileProvider.dart';
 import 'package:spotlight/provider/userPostProvider.dart';
 import 'package:spotlight/screens/subScreens/userPostScreen.dart';
@@ -41,16 +42,33 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profileProvider = context.watch<AllUserProfileProvider>();
+    final userProvider = context.watch<AllUserProfileProvider>();
 
-    if (profileProvider.isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(child: CircularProgressIndicator()),
+    if (userProvider.isLoading) {
+      return Skeletonizer(
+        enabled: true,
+        effect: ShimmerEffect(
+          baseColor: Color(0xFFE0E0E0),
+          highlightColor: Color(0xFFF5F5F5),
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: _profileBody(
+            context,
+            scrollController: _scrollController,
+            name: "", 
+            designation: "",
+            employeeId: "",
+            dojInYears: "",
+            profileImage: "",
+            userMedia: dummyData,
+            employeeGuid: "",
+          ),
+        ),
       );
     }
 
-    if (profileProvider.profileDate == null) {
+    if (userProvider.profileDate == null) {
       return Scaffold(
         backgroundColor: Colors.white,
         body: Center(
@@ -71,11 +89,38 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 30),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Column(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: _profileBody(
+        context,
+        scrollController: _scrollController,
+        name: userProvider.profileDate!.employeeName,
+        designation: userProvider.profileDate!.designation,
+        employeeId: userProvider.profileDate!.employeeId,
+        dojInYears: userProvider.profileDate!.dojInYears,
+        profileImage: userProvider.profileDate!.profileImage,
+        userMedia: userProvider.userMedia,
+        employeeGuid: userProvider.profileDate!.employeeGuid,
+      ),
+    );
+  }
+
+  Widget _profileBody(
+    BuildContext context, {
+    required scrollController,
+    required String name,
+    required String designation,
+    required String employeeId,
+    required String dojInYears,
+    required String profileImage,
+    required List<UserAllMediaResponse> userMedia,
+    required String employeeGuid,
+  }) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Padding(
+        padding: const EdgeInsets.only(top: 45),
+        child: Column(
           children: [
             Stack(
               alignment: AlignmentGeometry.bottomCenter,
@@ -84,7 +129,7 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
                 Container(
                   height: 130,
                   decoration: BoxDecoration(
-                    color: Colors.black,
+                    color: Color(0xFFE0E0E0),
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(20),
                       bottomRight: Radius.circular(20),
@@ -105,11 +150,9 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
                     ),
                     child: CircleAvatar(
                       radius: 50,
-                      backgroundImage:
-                          profileProvider.profileDate!.profileImage.isNotEmpty
-                          ? CachedNetworkImageProvider(
-                              profileProvider.profileDate!.profileImage,
-                            )
+                      backgroundColor: Color(0xFFE0E0E0),
+                      backgroundImage: profileImage.isNotEmpty
+                          ? CachedNetworkImageProvider(profileImage)
                           : AssetImage('assets/images/user_profile.jpg')
                                 as ImageProvider,
                     ),
@@ -140,9 +183,7 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
-                profileProvider.profileDate!.employeeName.isNotEmpty
-                    ? profileProvider.profileDate!.employeeName.capitalize()
-                    : "User",
+                name.isNotEmpty ? name.capitalize() : "User",
                 style: TextStyle(
                   fontFamily: "Lexend",
                   fontSize: 13,
@@ -153,9 +194,7 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: Text(
-                profileProvider.profileDate!.designation.isNotEmpty
-                    ? profileProvider.profileDate!.designation.capitalize()
-                    : "Developer",
+                designation.isNotEmpty ? designation.capitalize() : "Developer",
                 style: TextStyle(
                   fontFamily: "Lexend",
                   fontSize: 13,
@@ -174,9 +213,7 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
                     spacing: 4,
                     children: [
                       Text(
-                        profileProvider.profileDate!.employeeId.isNotEmpty
-                            ? profileProvider.profileDate!.employeeId
-                            : "NWIUSER",
+                        employeeId.isNotEmpty ? employeeId : "NWIUSER",
                         style: TextStyle(
                           fontSize: 13,
                           fontFamily: 'Lexend',
@@ -195,19 +232,19 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
                       ),
                     ],
                   ),
-          
+            
                   VerticalDivider(
                     width: 15,
                     radius: BorderRadius.circular(10),
                     thickness: 1,
                     color: Colors.grey[500],
                   ),
-          
+            
                   Column(
                     spacing: 4,
                     children: [
                       Text(
-                        "${profileProvider.userMedia.isNotEmpty ? profileProvider.userMedia.first.totalCount : 0}",
+                        "${userMedia.isNotEmpty ? userMedia.first.totalCount : 0}",
                         style: TextStyle(
                           fontSize: 13,
                           fontFamily: 'Lexend',
@@ -226,21 +263,19 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
                       ),
                     ],
                   ),
-          
+            
                   VerticalDivider(
                     width: 15,
                     radius: BorderRadius.circular(10),
                     thickness: 1,
                     color: Colors.grey[500],
                   ),
-          
+            
                   Column(
                     spacing: 4,
                     children: [
                       Text(
-                        profileProvider.profileDate!.dojInYears.isNotEmpty
-                            ? profileProvider.profileDate!.dojInYears
-                            : "Recently Joined",
+                        dojInYears.isNotEmpty ? dojInYears : "Recently Joined",
                         style: TextStyle(
                           fontSize: 13,
                           fontFamily: 'Lexend',
@@ -262,7 +297,7 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
                 ],
               ),
             ),
-          
+            
             SizedBox(height: 15),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -273,9 +308,9 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
               ),
             ),
             SizedBox(height: 10),
-          
+            
             Expanded(
-              child: profileProvider.userMedia.isEmpty
+              child: userMedia.isEmpty
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       spacing: 20,
@@ -306,11 +341,11 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
                       padding: EdgeInsets.fromLTRB(10, 10, 10, 30),
                       mainAxisSpacing: 12,
                       crossAxisSpacing: 10,
-                      itemCount: profileProvider.userMedia.length,
+                      itemCount: userMedia.length,
                       itemBuilder: (context, index) {
-                        var feed = profileProvider.userMedia[index];
+                        var feed = userMedia[index];
                         var isVideo = Helpers.isVideo(feed.mediaThumb);
-          
+            
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -354,4 +389,17 @@ class _AllUserProfilePageState extends State<AllUserProfileScreen> {
       ),
     );
   }
+
+  final dummyData = List.generate(
+    6,
+    (index) => UserAllMediaResponse(
+      mediaGuid: "",
+      addedOn: DateTime.now(),
+      mediaDesc: "Loading description",
+      mediaThumb: "Loading Thumb image",
+      mediaTittle: "Loading Title",
+      mediaType: "Loading type",
+      totalCount: 6,
+    ),
+  );
 }

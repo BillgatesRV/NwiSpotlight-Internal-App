@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:spotlight/core/urls.dart';
+import 'package:spotlight/models/apiResponse.dart';
 import 'package:spotlight/models/employeeProfileResponse.dart';
 import 'package:spotlight/models/userResponse.dart';
 import 'package:spotlight/services/authService/authStorage.dart';
@@ -48,7 +50,9 @@ class ProfileService extends ProfileBaseService {
   }
 
   @override
-  Future<EmployeeProfileResponse> fetchOtherEmployeeProfileDetail(String empGuid) async {
+  Future<EmployeeProfileResponse> fetchOtherEmployeeProfileDetail(
+    String empGuid,
+  ) async {
     try {
       final url = Uri.parse(
         "${Urls.baseUrl}employee/common/get-other-emp-profile-details?empGuid=$empGuid",
@@ -118,6 +122,64 @@ class ProfileService extends ProfileBaseService {
     } catch (e) {
       debugPrint("Error fetching Users: $e");
       throw Exception(e.toString());
+    }
+  }
+
+  @override
+  Future<ApiResponse> addCoverImage(File coverImg) async {
+    try {
+      final url = Uri.parse(
+        "${Urls.baseUrl}employee/profile/add-user-cover-image",
+      );
+
+      String? token = await _authStorage.getToken();
+
+      if (token == null || token.isEmpty) {
+        return ApiResponse(
+          result: null,
+          isSuccess: false,
+          message: "Unauthorized access",
+          responseCode: 401,
+        );
+      }
+
+      var request = http.MultipartRequest("POST", url);
+
+      request.headers["Authorization"] = "Bearer $token";
+
+      request.files.add(
+        await http.MultipartFile.fromPath("coverImage", coverImg.path),
+      );
+
+      final streamedData = await request.send();
+      final response = await http.Response.fromStream(streamedData);
+
+      final data = jsonDecode(response.body);
+
+      if (data["responseCode"] == 201 || data["responseCode"] == 200) {
+        return ApiResponse(
+          isSuccess: data["isSuccess"],
+          message: data["message"] ?? "Cover image uploaded successfully",
+          responseCode: data["responseCode"],
+          result: data["result"],
+        );
+      } else {
+        return ApiResponse(
+          isSuccess: data["isSuccess"],
+          message: data["message"] ?? "Failed to upload cover image",
+          responseCode: response.statusCode,
+          result: null,
+        );
+      }
+    } catch (e) {
+      debugPrint("Add Cover Image Error: $e");
+
+      return ApiResponse(
+        isSuccess: false,
+        message: "Something went wrong",
+        responseCode: 500,
+        result: null,
+      );
     }
   }
 }
