@@ -1,9 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:spotlight/screens/mainScreens/home_page.dart';
-import 'package:spotlight/screens/mainScreens/profile_page.dart';
-import 'package:spotlight/screens/mainScreens/upload_page.dart';
+import 'package:spotlight/screens/main_screens/home_page.dart';
+import 'package:spotlight/screens/main_screens/profile_page.dart';
+import 'package:spotlight/screens/main_screens/upload_page.dart';
 
 class GlassBottomNav extends StatefulWidget {
   const GlassBottomNav({super.key});

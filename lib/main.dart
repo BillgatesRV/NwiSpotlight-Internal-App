@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:spotlight/provider/homeProvider.dart';
-import 'package:spotlight/provider/loginProvider.dart';
-import 'package:spotlight/provider/profileProvider.dart';
-import 'package:spotlight/provider/uploadsProvider.dart';
-import 'package:spotlight/screens/preLogin/splashScreen.dart';
+import 'package:spotlight/core/app_navigator.dart';
+import 'package:spotlight/provider/home_provider.dart';
+import 'package:spotlight/provider/login_provider.dart';
+import 'package:spotlight/provider/profile_provider.dart';
+import 'package:spotlight/provider/uploads_provider.dart';
+import 'package:spotlight/screens/pre_login/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +37,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: AppNavigator.navigatorKey,
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
     );

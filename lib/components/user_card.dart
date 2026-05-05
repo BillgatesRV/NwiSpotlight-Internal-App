@@ -4,9 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spotlight/common_components/tabbar.dart';
 import 'package:spotlight/core/Helpers.dart';
-import 'package:spotlight/provider/allUserProfileProvider.dart';
-import 'package:spotlight/screens/subScreens/allUserProfileScreen.dart';
-import 'package:spotlight/services/authService/authStorage.dart';
+import 'package:spotlight/provider/all_user_profile_provider.dart';
+import 'package:spotlight/screens/sub_screens/all_user_profile_screen.dart';
+import 'package:spotlight/services/auth_service/auth_storage.dart';
 
 class UserCard extends StatelessWidget {
   final String name;
